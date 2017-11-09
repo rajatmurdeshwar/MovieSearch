@@ -8,7 +8,7 @@
     tools:context=".MainActivity"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main"
-    android:background="#B2EBF2">
+    android:background="@color/colorLight">
 
 
     <android.support.design.widget.TextInputLayout
@@ -24,6 +24,8 @@
             android:id="@+id/edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minLines="1"
+            android:imeOptions="actionSearch"
             android:hint="Search by Name" />
     </android.support.design.widget.TextInputLayout>
 
@@ -37,12 +39,9 @@
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_marginTop="137dp"
+        android:layout_marginTop="95dp"
         app:layout_constraintTop_toBottomOf="@+id/text_input_layout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        android:onClick="searchMovie"
-        app:layout_constraintVertical_bias="0.0" />
+        android:onClick="searchMovie" />
 
     <Button
         android:id="@+id/popular_movies"
@@ -52,11 +51,22 @@
         android:layout_marginTop="51dp"
         style="@style/Widget.AppCompat.Button.Borderless"
         app:layout_constraintTop_toBottomOf="@+id/button"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        android:onClick="searchPopularMovies"
+        android:layout_marginLeft="25dp"
         app:layout_constraintLeft_toLeftOf="parent" />
+
+    <Button
+        android:id="@+id/upcoming_movies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        app:layout_constraintTop_toBottomOf="@+id/button"
+        android:text="Upcoming Movies"
+        android:layout_marginTop="51dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintVertical_bias="0.0"
+        android:layout_marginRight="25dp"
+        app:layout_constraintRight_toRightOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

@@ -2,6 +2,7 @@
     <string name="app_name">Movie Search</string>
     <string name="action_settings">Settings</string>
     <string name="tvMovieName">Movie Name</string>
+    <string name="app_data">Movie Details</string>
     <string name="tvYear">Year</string>
     <string name="tvRating">Rating</string>
     <string name="tvRuntime">Runtime</string>

@@ -16,5 +16,14 @@ public interface APIEndPoints {
     @GET("movie/popular")
     Call<Results> getPopularMovies(@Query("api_key") String apiKey);
 
+    @GET("movie/top_rated")
+    Call<Results> getRecentMovies(@Query("api_key") String apiKey);
+
+    @GET("movie/upcoming")
+    Call<Results> getUpcomingMovies(@Query("api_key") String apiKey);
+
+    @GET("movie/latest")
+    Call<Results> getLatestMovies(@Query("api_key") String apiKey);
+
 
 }
