@@ -37,7 +37,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     String data;
     private String imagePath;
-    static final String API_KEY = "84040e61f6d76d593351bdce14a4c860";
+    static final String API_KEY = "84040e61f6d76";
     static final String IMAGE_URL="https://image.tmdb.org/t/p/w500";
     static final String MOVIE_TITLE ="title";
 
