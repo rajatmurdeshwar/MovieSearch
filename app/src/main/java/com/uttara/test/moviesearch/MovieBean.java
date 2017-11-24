@@ -1,10 +1,13 @@
 package com.uttara.test.moviesearch;
 
+import android.os.Parcel;
+        import android.os.Parcelable;
+
         import java.util.List;
         import com.google.gson.annotations.Expose;
         import com.google.gson.annotations.SerializedName;
 
-public class MovieBean {
+public class MovieBean implements Parcelable {
 
 
     @SerializedName("vote_count")
@@ -46,6 +49,9 @@ public class MovieBean {
     @SerializedName("overview")
     @Expose
     private String overview;
+    @SerializedName("release_date")
+    @Expose
+    private String releaseDate;
 
     @Override
     public String toString() {
@@ -119,9 +125,7 @@ public class MovieBean {
         return result;
     }
 
-    @SerializedName("release_date")
-    @Expose
-    private String releaseDate;
+
 
     public Integer getVoteCount() {
         return voteCount;
@@ -234,4 +238,44 @@ public class MovieBean {
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
+
+    protected MovieBean(Parcel in) {
+        title = in.readString();
+        posterPath=in.readString();
+        voteCount = in.readInt();
+        id = in.readInt();
+        voteAverage = in.readDouble();
+        releaseDate = in.readString();
+        overview = in.readString();
+
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeString(posterPath);
+        dest.writeInt(voteCount);
+        dest.writeInt(id);
+        dest.writeDouble(voteAverage);
+        dest.writeString(releaseDate);
+        dest.writeString(overview);
+
+    }
+
+    public static final Creator<MovieBean> CREATOR = new Creator<MovieBean>() {
+        @Override
+        public MovieBean createFromParcel(Parcel source) {
+            return new MovieBean(source);
+        }
+
+        @Override
+        public MovieBean[] newArray(int size) {
+            return new MovieBean[size];
+        }
+    };
 }

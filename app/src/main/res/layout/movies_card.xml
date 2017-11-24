@@ -8,6 +8,7 @@
     app:cardCornerRadius="2dp"
     app:cardElevation="1dp"
     app:cardUseCompatPadding="true"
+    android:clickable="true"
     android:layout_margin="3dp">
 
     <RelativeLayout
@@ -24,14 +25,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/wall_image"
-            style="@style/Base.TextAppearance.AppCompat.Large"
+            style="@style/Base.TextAppearance.AppCompat.Medium"
             tools:text="TITLE"/>
 
         <TextView
             android:id="@+id/releaseDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Base.TextAppearance.AppCompat.Large"
+            style="@style/Base.TextAppearance.AppCompat.Medium"
             android:layout_toRightOf="@+id/wall_image"
             android:layout_below="@+id/title"
             tools:text="RELEASE DATE"/>
@@ -39,7 +40,7 @@
             android:id="@+id/voteCount_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Base.TextAppearance.AppCompat.Large"
+            style="@style/Base.TextAppearance.AppCompat.Medium"
             android:layout_toRightOf="@+id/wall_image"
             android:layout_below="@+id/releaseDate"
             tools:text="VOTE COUNT"/>
@@ -47,7 +48,7 @@
             android:id="@+id/rating_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Base.TextAppearance.AppCompat.Large"
+            style="@style/Base.TextAppearance.AppCompat.Medium"
             android:layout_toRightOf="@+id/wall_image"
             android:layout_below="@+id/voteCount_tv"
             tools:text="RELEASE DATE"/>

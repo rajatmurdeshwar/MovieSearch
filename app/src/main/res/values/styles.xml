@@ -21,4 +21,9 @@
         <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
+    <style name="RatingBar" parent="@android:style/Widget.Material.RatingBar.Indicator">
+        <item name="android:colorControlNormal">#FFCCCCCC</item>
+        <item name="android:colorControlActivated">@color/colorPrimaryDark</item>
+    </style>
+
 </resources>

@@ -1,5 +1,6 @@
 package com.uttara.test.moviesearch;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -11,19 +12,19 @@ import retrofit2.http.Query;
 
 public interface APIEndPoints {
     @GET("search/movie")
-    Call<Results> getMovieDetails(@Query("api_key") String apiKey,
-                                            @Query("query") String movieName);
+    Observable<Results> getMovieDetails(@Query("api_key") String apiKey,
+                                        @Query("query") String movieName);
     @GET("movie/popular")
-    Call<Results> getPopularMovies(@Query("api_key") String apiKey);
+    Observable<Results> getPopularMovies(@Query("api_key") String apiKey);
 
     @GET("movie/top_rated")
     Call<Results> getRecentMovies(@Query("api_key") String apiKey);
 
     @GET("movie/upcoming")
-    Call<Results> getUpcomingMovies(@Query("api_key") String apiKey);
+    Observable<Results> getUpcomingMovies(@Query("api_key") String apiKey);
 
     @GET("movie/latest")
-    Call<Results> getLatestMovies(@Query("api_key") String apiKey);
+    Observable<Results> getLatestMovies(@Query("api_key") String apiKey);
 
 
 }

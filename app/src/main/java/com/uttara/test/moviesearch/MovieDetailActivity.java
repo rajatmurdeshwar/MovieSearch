@@ -7,16 +7,23 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatRatingBar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -24,38 +31,39 @@ import retrofit2.Retrofit;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
-    ImageView imgMoviePoster;
-    TextView tvMovieName;
-    TextView tvYear;
-    TextView tvRate;
-    TextView tvGerne;
-    TextView tvcontent;
-    TextView originalLanguage;
-    TextView popularity;
-    TextView voteCount;
-    CollapsingToolbarLayout collapsingToolbarLayout;
+    private ImageView imgMoviePoster;
+    private TextView tvMovieName, tvYear, tvRate, tvGerne, tvContent, originalLanguage, popularity, voteCount;
 
-    String data;
+    private static final String TAG = MovieDetailActivity.class.getSimpleName();
+    private String data;
     private String imagePath;
-    static final String API_KEY = "84040e61f6d76";
+    static final String API_KEY = "84040e61f6d76d593351bdce14a4c860";
     static final String IMAGE_URL="https://image.tmdb.org/t/p/w500";
     static final String MOVIE_TITLE ="title";
+    private CompositeDisposable _disposables;
+    private APIEndPoints service;
+    private List<MovieBean> list;
+    private RatingBar ratingBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_movie_detail);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         initCollapsingToolbar();
+
         Intent intent = getIntent();
         data = intent.getStringExtra("name");
-       // collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
-       // collapsingToolbarLayout.setTitleEnabled(false);
-        //toolbar.setTitle(data);
+        data = intent.getStringExtra("MovieName");
 
+        _disposables = new CompositeDisposable();
+        ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+        //ratingBar.setNumStars(10);
         imgMoviePoster = (ImageView) findViewById(R.id.expandedImage);
         tvMovieName = (TextView) findViewById(R.id.title);
         originalLanguage = (TextView) findViewById(R.id.originalLang_tv);
@@ -64,9 +72,10 @@ public class MovieDetailActivity extends AppCompatActivity {
         tvYear = (TextView) findViewById(R.id.release_date_tv);
         tvRate = (TextView) findViewById(R.id.rating_tv);
         tvGerne = (TextView) findViewById(R.id.genere_tv);
-        tvcontent = (TextView) findViewById(R.id.content_tv);
+        tvContent = (TextView) findViewById(R.id.content_tv);
 
-        //getSupportLoaderManager().initLoader(LOADER_ID,b,this);
+
+        service = new RetrofitBuilder().getStarWarsDetails();
         getMovieDetails();
     }
 
@@ -98,53 +107,57 @@ public class MovieDetailActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(_disposables!= null && !_disposables.isDisposed()) {
+            _disposables.dispose();
+        }
+    }
+
     private void getMovieDetails() {
+        _disposables.add(service
+                .getMovieDetails(API_KEY, data)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableObserver<Results>() {
 
-        if (data != null) {
-            //String movieName = data;
-            Retrofit retrofit = RetrofitBuilder.getRetrofit();
-            APIEndPoints service = retrofit.create(APIEndPoints.class);
-            Call<Results> call = service.getMovieDetails(API_KEY,data);
-            Log.d("moviessearch","in "+String.valueOf(service.hashCode()));
-            call.enqueue(new Callback<Results>() {
-                @Override
-                public void onResponse(Call<Results> call, Response<Results> response) {
-                    Log.d("moviesearch", "in M2A=--> fetchMovie->CallBack-->onResponse sucess "  + response.isSuccessful());
-                    if(response.isSuccessful()) {
-                        try {
-                            Log.d("moviesearch", "in M2A=--> fetchMovie->CallBack-->onResponse " + response.body());
-                            List<MovieBean> bean = response.body().getResults();
+                    @Override
+                    public void onNext(@NonNull Results results) {
+                       getMovieSearchDetails(results);
+                    }
 
-                            tvMovieName.setText(bean.get(0).getTitle());
-                            Log.d("moviesearch", "in M2A=--> fetchMovie->CallBack-->onResponse " + bean.get(0).getTitle());
-                            originalLanguage.setText(bean.get(0).getOriginalLanguage());
-                            popularity.setText(Double.toString(bean.get(0).getPopularity()));
-                            imagePath = bean.get(0).getPosterPath();
-                            tvcontent.setText(bean.get(0).getOverview());
-                            voteCount.setText(String.valueOf(bean.get(0).getVoteCount()));
-                            tvYear.setText(bean.get(0).getReleaseDate());
-                            tvRate.setText(Double.toString(bean.get(0).getVoteAverage()));
-                            tvGerne.setText(String.valueOf(bean.get(0).getGenreIds().get(0)));
-                            if(IMAGE_URL !=null && imagePath != null) {
-                                Log.d("moviesearch",IMAGE_URL);
-                                Picasso.with(MovieDetailActivity.this).load(IMAGE_URL+""+imagePath).into(imgMoviePoster);
-                            }
-                        }catch(Exception e) {
-                            Log.e("moviesearch",e.getMessage());
-                            e.printStackTrace();
-                        }
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                      Log.d(TAG," onError "+e.getMessage());
+                    }
 
+                    @Override
+                    public void onComplete() {
+                       Log.d(TAG," onCompleted");
                     }
                 }
-
-                @Override
-                public void onFailure(Call<Results> call, Throwable t) {
-                    Log.d("moviesearch", "in MA=--> fetchMovie->CallBack-->onResponse failure t" + t);
-                    t.printStackTrace();
-
-                }
-            });
-        }
+                )
+        );
 
     }
+
+    private void getMovieSearchDetails(Results results) {
+       list = results.getResults();
+        int i=0;
+        if(list!= null) {
+            Log.d(TAG," "+list);
+            tvMovieName.setText(list.get(i).getTitle());
+            tvContent.setText(list.get(i).getOverview());
+            tvGerne.setText(String.valueOf(list.get(i).getGenreIds().get(i)));
+            ratingBar.setRating(Float.parseFloat(Double.toString(list.get(i).getVoteAverage())));
+            Picasso.with(this).load(IMAGE_URL+""+list.get(i).getPosterPath()).into(imgMoviePoster);
+            originalLanguage.setText(list.get(i).getOriginalLanguage());
+            tvYear.setText(list.get(i).getReleaseDate());
+            voteCount.setText(String.valueOf(list.get(i).getVoteCount()));
+            popularity.setText(Double.toString(list.get(i).getPopularity()));
+        }
+    }
+
 }
+

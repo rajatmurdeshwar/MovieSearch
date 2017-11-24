@@ -1,13 +1,16 @@
 package com.uttara.test.moviesearch;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +19,11 @@ import android.widget.ProgressBar;
 import java.io.IOException;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -27,18 +35,21 @@ import static com.uttara.test.moviesearch.MovieDetailActivity.API_KEY;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MoviesListFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<MovieBean>> {
+public class MoviesListFragment extends Fragment implements MoviesAdapter.ListItemClickListener{
 
 
-     RecyclerView recyclerView;
-    List<MovieBean> listData;
-    ProgressBar progressBar;
-    boolean key;
-    public static int LOADER_ID = 111;
+    private RecyclerView recyclerView;
+    private static final String TAG = MoviesListFragment.class.getSimpleName();
+    private ContentLoadingProgressBar progressBar;
+    private boolean key;
+    private CompositeDisposable _disposables;
+    private APIEndPoints service;
+    private List<MovieBean> bean;
+
 
 
     public MoviesListFragment() {
-        // Required empty public constructor
+
     }
 
 
@@ -48,74 +59,54 @@ public class MoviesListFragment extends Fragment implements LoaderManager.Loader
         View view = inflater.inflate(R.layout.fragment_movies_list, container, false);
         key = getArguments().getBoolean("key");
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        progressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
+        progressBar = (ContentLoadingProgressBar) view.findViewById(R.id.progress_bar);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        getLoaderManager().initLoader(LOADER_ID,null,this);
+        _disposables = new CompositeDisposable();
 
+        service = new RetrofitBuilder().getStarWarsDetails();
+        getMoviesList();
 
-        // Inflate the layout for this fragment
         return view;
     }
 
-    @Override
-    public Loader<List<MovieBean>> onCreateLoader(int id, Bundle args) {
-        return new AsyncTaskLoader<List<MovieBean>>(getActivity()) {
-            List<MovieBean> bean= null;
+    private void getMoviesList() {
 
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-                if(bean!= null){
-                    deliverResult(bean);
-                } else {
-                    progressBar.setVisibility(View.VISIBLE);
-                    forceLoad();
-                }
-            }
+        _disposables.add(service.getPopularMovies(API_KEY).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableObserver<Results>() {
+                                   @Override
+                                   public void onNext(@NonNull Results results) {
+                                       getMovieListDetails(results);
+                                   }
 
-            @Override
-            public List<MovieBean> loadInBackground() {
-                Retrofit retrofit = RetrofitBuilder.getRetrofit();
-                APIEndPoints service = retrofit.create(APIEndPoints.class);
-                if(key) {
-                    Call<Results> call = service.getPopularMovies(API_KEY);
-                    try {
-                        bean = call.execute().body().getResults();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else{
-                    Call<Results> call = service.getUpcomingMovies(API_KEY);
-                    try {
-                        bean = call.execute().body().getResults();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return bean;
-            }
+                                   @Override
+                                   public void onError(@NonNull Throwable e) {
+                                       Log.d(TAG," onError "+e.getMessage());
+                                   }
 
-            @Override
-            public void deliverResult(List<MovieBean> data) {
-                super.deliverResult(data);
-                listData = data;
+                                   @Override
+                                   public void onComplete() {
+                                       Log.d(TAG," onCompleted");
+                                   }
+                               }
+                )
+        );
+    }
 
-            }
-        };
+    private void getMovieListDetails(Results results) {
+        bean = results.getResults();
+        recyclerView.setAdapter(new MoviesAdapter(getContext(),bean,this));
+        Log.d(TAG,"  getMoviesList  ");
     }
 
     @Override
-    public void onLoadFinished(Loader<List<MovieBean>> loader, List<MovieBean> data) {
-
-        if(data!= null) {
-            progressBar.setVisibility(View.INVISIBLE);
-            recyclerView.setAdapter(new MoviesAdapter(getContext(),data));
-        }
-
+    public void onListItemClick(int clickedItemIndex) {
+        Log.d(TAG," "+clickedItemIndex);
+       Log.d(TAG,bean.get(clickedItemIndex).getTitle());
+        Intent i = new Intent(getActivity(),MovieDetailActivity.class);
+        i.putExtra("MovieName",bean.get(clickedItemIndex).getTitle());
+        startActivity(i);
     }
 
-    @Override
-    public void onLoaderReset(Loader<List<MovieBean>> loader) {
-         getLoaderManager().restartLoader(LOADER_ID,null,this);
-    }
+
 }

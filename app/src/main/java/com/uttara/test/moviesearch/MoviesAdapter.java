@@ -20,8 +20,10 @@ import static com.uttara.test.moviesearch.MovieDetailActivity.IMAGE_URL;
 
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHolder> {
 
+    final private ListItemClickListener mOnClickListener;
 
-    class MovieViewHolder extends RecyclerView.ViewHolder {
+
+    class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView  releasDate, voteCount, rating, title;
         ImageView wallImageUrl;
@@ -34,14 +36,26 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
             voteCount = (TextView) itemView.findViewById(R.id.voteCount_tv);
             rating = (TextView) itemView.findViewById(R.id.rating_tv);
             title = (TextView) itemView.findViewById(R.id.title);
+            itemView.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            int clickedPosition = getAdapterPosition();
+            mOnClickListener.onListItemClick(clickedPosition);
+        }
+    }
+
+    public  interface ListItemClickListener {
+        void onListItemClick(int clickedItemIndex);
     }
     private Context mContext;
     List<MovieBean> beanList;
 
-    public MoviesAdapter(Context context, List<MovieBean> beanList) {
+    public MoviesAdapter(Context context, List<MovieBean> beanList, ListItemClickListener listener) {
         this.beanList =beanList;
         this.mContext = context;
+        this.mOnClickListener = listener;
     }
 
     @Override
@@ -64,5 +78,14 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
     @Override
     public int getItemCount() {
         return beanList.size();
+    }
+
+    public String getName(int position) {
+        if (position < 0 || position >= getItemCount()) {
+            throw new IllegalArgumentException("Item position is out of adapter's range");
+        } else if(beanList!= null) {
+            return beanList.get(position).getTitle();
+        }
+       return null;
     }
 }
